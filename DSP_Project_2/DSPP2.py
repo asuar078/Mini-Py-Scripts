@@ -29,7 +29,7 @@ def plt_graph(signal_arr, title='Title', x_axis='x-axis', y_axis='y-axis'):
     graph.set_title(title, fontsize=35)
     graph.set_xlabel(x_axis, fontsize=25)
     graph.set_ylabel(y_axis, fontsize=25)
-    plt.show()
+    # plt.show()
 
 def generate_range(size):
     return np.arange(0, size*0.1, 0.1)
@@ -62,6 +62,8 @@ def upper_bound_u(noisy, L):
     upper = 1 / ((L+1)*float(pwr))
     print('Upper bound u = ' + str(upper))
 
+    return pwr, upper
+
 def delay(signal, dly):
     '''
     Shift a signal by the value in dly
@@ -74,21 +76,70 @@ def delay(signal, dly):
         lst[idx] = signal[idx-dly]
     return lst
 
+def lms(delayed_signal, signal, num_of_weights, mu):
+    # convert list to transposed matrix
+    delayed_mtrx = np.matrix([delayed_signal]).transpose()
+    signal_mtrx = np.matrix([signal]).transpose()
+    # print(delayed_mtrx)
+    # print(signal_mtrx)
+
+    # create column matrix the size of signal
+    weights = np.matrix([np.zeros(num_of_weights)]).transpose()
+    # print(weights)
+
+    error = np.matrix([np.zeros(len(delayed_signal))]).transpose()
+    output = np.matrix([np.zeros(len(delayed_signal))]).transpose()
+
+    length = len(delayed_signal)+1
+    # print('length: ' + str(length))
+
+    for indx in range(num_of_weights+1, length):
+        #print('index: ' + str(indx))
+
+        sample_sig = delayed_mtrx[(indx-num_of_weights):indx]
+        #print(sample_sig)
+
+        output_value = weights.transpose()*sample_sig
+        #print('output: ' + str(output_value))
+
+        # output[indx-1] = output_value
+        error_value = signal[indx-1] - output_value
+        #print('error: ' + str(error_value))
+
+        weights = weights + (2*mu*float(error_value)*sample_sig)
+        #print('new weights: ' + str(weights))
+        #print()
+
+        output[indx-1] = output_value
+        error[indx-1] = error_value
+
+
+    return output, error, weights
+
 if __name__ == '__main__':
-    SIZE = 200
+    SIZE = 2048
     FREQUENCY = (1.0/16)
 
     noise = generate_noise(low=-0.3, high=0.3, size=SIZE)
     sine_wave = generate_sine_wave(SIZE, FREQUENCY)
     noisy_wave = noise + sine_wave
+    # noisy_wave = [values for values in range(0,10)]
 
-    upper_bound_u(noisy_wave, 50)
+    # upper_bound_u(noisy_wave, 50)
 
-    delayed = delay(noisy_wave, 40)
+    delayed = delay(noisy_wave, 3)
 
-    plt_graph(noisy_wave)
-    plt_graph(delayed)
+    out, err, w = lms(delayed, noisy_wave, 60, 0.001)
+
+    # test_lst = [values for values in range(5)]
+    # # print(test_lst)
+    # mtrx = np.matrix([test_lst]).transpose()
+
+    plt_graph(out, title='After LMS')
+    # plt_graph(err, title='error')
+
+    plt_graph(noisy_wave, title='Before LMS')
+    # plt_graph(delayed)
 
 
-
-
+    plt.show()
