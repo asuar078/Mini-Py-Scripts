@@ -1,1 +1,7 @@
 *.py.swp
+*.swp
+*.swn
+*.swm
+*.swo
+__pychache__/
+*.0
