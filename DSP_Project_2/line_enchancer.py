@@ -5,12 +5,10 @@ Line enchancer class
 from math import floor
 import matplotlib.pyplot as plt
 import numpy as np
-import random
-from numpy import pi, sin, cos
-from numpy import linalg as LA
-from numpy.linalg import inv
-from scipy.fftpack import fft
-from mpl_toolkits.mplot3d import Axes3D
+# import random
+from numpy import pi, sin
+# from numpy.linalg import inv
+from scipy import signal
 
 np.set_printoptions(precision=3)
 np.set_printoptions(suppress=True)
@@ -21,38 +19,38 @@ class LineEnchancer:
         self.size = size
         self.frequency = frequency
 
-    def plt_graph(self, signal_arr, title='Title', x_axis='x-axis',
+    def plt_graph(self, sgnl_arr, title='Title', x_axis='x-axis',
                   y_axis='y-axis'):
         '''
-        Plot a signal
+        Plot a sgnl
         '''
         plt.style.use('ggplot')
 
-        rang = self.generate_range(len(signal_arr))
+        rang = self.generate_range(len(sgnl_arr))
 
         fig = plt.figure(figsize=(22, 10))
         graph = fig.add_subplot(1, 1, 1)
 
-        graph.plot(rang, signal_arr)
+        graph.plot(rang, sgnl_arr)
         graph.set_title(title, fontsize=35)
         graph.set_xlabel(x_axis, fontsize=25)
         graph.set_ylabel(y_axis, fontsize=25)
         # plt.show()
 
-    def plt_graph_overlay(self, signal1, signal2, title='Title',
+    def plt_graph_overlay(self, sgnl1, sgnl2, title='Title',
                           x_axis='x-axis', y_axis='y-axis'):
         '''
-        Plot a signal
+        Plot a sgnl
         '''
         plt.style.use('ggplot')
 
-        rang = self.generate_range(len(signal1))
+        rang = self.generate_range(len(sgnl1))
 
         fig = plt.figure(figsize=(22, 10))
         graph = fig.add_subplot(1, 1, 1)
 
-        graph.plot(rang, signal1)
-        graph.plot(rang, signal2, color='b')
+        graph.plot(rang, sgnl1)
+        graph.plot(rang, sgnl2, color='b')
 
         graph.set_title(title, fontsize=35)
         graph.set_xlabel(x_axis, fontsize=25)
@@ -86,13 +84,13 @@ class LineEnchancer:
 
         return sin(2*pi*samples*self.frequency)
 
-    def upper_bound_u(self, signal, L):
+    def upper_bound_u(self, sgnl, L):
         '''
         calculate the upper bound of the u value
-        signal = input signal
+        sgnl = input sgnl
         L = number of weights
         '''
-        mtrx = np.matrix([signal])
+        mtrx = np.matrix([sgnl])
         pwr = (mtrx * (mtrx.transpose() / mtrx.size))
         print('Power = ' + str(float(pwr)))
 
@@ -101,79 +99,79 @@ class LineEnchancer:
 
         return pwr, upper
 
-    def delay(self, signal, dly):
+    def delay(self, sgnl, dly):
         '''
-        Shift a signal by the value in dly
+        Shift a sgnl by the value in dly
         return
         shifted list
         '''
-        lst = np.zeros(len(signal))
+        lst = np.zeros(len(sgnl))
 
-        for idx in range(dly, len(signal)):
-            lst[idx] = signal[idx-dly]
+        for idx in range(dly, len(sgnl)):
+            lst[idx] = sgnl[idx-dly]
         return lst
 
-    def lms(self, delayed_signal, signal, L, mu):
+    def lms(self, delayed_sgnl, sgnl, L, mu):
         '''
         Implementaion of the lms algorithm
-        signal = input signal
-        delayed_signal = the input signal delayed
+        sgnl = input sgnl
+        delayed_sgnl = the input sgnl delayed
         L = number of weights
         mu = mu value
         '''
         # convert list to transposed matrix
-        delayed_mtrx = np.matrix([delayed_signal]).transpose()
-        signal_mtrx = np.matrix([signal]).transpose()
-        # print(delayed_mtrx)
-        # print(signal_mtrx)
+        delayed_mtrx = np.matrix([delayed_sgnl]).transpose()
+        sgnl_mtrx = np.matrix([sgnl]).transpose()
 
-        # create column matrix the size of signal
+        # create column matrix the size of sgnl
         weights = np.matrix([np.zeros(L)]).transpose()
-        # print(weights)
 
-        error = np.matrix([np.zeros(len(delayed_signal))]).transpose()
-        output = np.matrix([np.zeros(len(delayed_signal))]).transpose()
+        error = np.matrix([np.zeros(len(delayed_sgnl))]).transpose()
+        output = np.matrix([np.zeros(len(delayed_sgnl))]).transpose()
 
-        length = len(delayed_signal)+1
-        # print('length: ' + str(length))
+        length = len(delayed_sgnl)+1
 
         for indx in range(L+1, length):
-            #print('index: ' + str(indx))
 
             sample_sig = delayed_mtrx[(indx-L):indx]
-            #print(sample_sig)
 
             output_value = weights.transpose()*sample_sig
-            #print('output: ' + str(output_value))
 
-            # output[indx-1] = output_value
-            # error_value = signal[indx-1] - output_value
-            error_value = signal_mtrx[indx-1] - output_value
-            #print('error: ' + str(error_value))
+            error_value = sgnl_mtrx[indx-1] - output_value
 
             weights = weights + (2*mu*float(error_value)*sample_sig)
-            #print('new weights: ' + str(weights))
-            #print()
 
             output[indx-1] = output_value
             error[indx-1] = error_value
 
         return output, error, weights
 
-    def generate_fft(self, signal):
-        # signal_fft = fft(signal)
-        signal_fft = np.fft.rfft(signal, norm='ortho')
+    def generate_fft(self, sgnl):
+        N = len(sgnl)
 
-        plt.plot(signal_fft)
-        plt.show()
+        new_lst = np.zeros(len(sgnl))
+        for values in range(0, N):
+            new_lst[values] = sgnl[values]
+        # print(new_lst)
 
-        # P2 = np.abs(signal_fft/self.size)
-        # P1 = P2[0:self.size/2]
+        # sgnl_fft = np.fft.fft(sgnl)
+        sgnl_fft = np.fft.fft(new_lst)
 
-        # return np.abs(signal_fft[0:self.size/2])
-        # return signal_fft[0:self.size/2]
-        # return P1
-        return np.fft.rfft(signal)
+        # return 2.0/N * np.abs(sgnl_fft[0:N/2])
+        mtrx_fft = 2.0/N * np.abs(sgnl_fft[0:N/2])
+
+        return mtrx_fft
+
+    def generate_psd(self, sgnl):
+        N = len(sgnl)
+
+        new_lst = np.zeros(len(sgnl))
+        for values in range(0, N):
+            new_lst[values] = sgnl[values]
+
+        F, P_den = signal.welch(new_lst, nfft=128, nperseg=128)
+
+        return P_den
 
     def gated_sine(self, P0=0.1):
         freq = (1/8)
@@ -183,7 +181,7 @@ class LineEnchancer:
         # regular sine wave
         samples = self.generate_range(self.size)
         full_wave = P0 * sin(2*pi*samples*freq)
-        # signal of all zeros
+        # sgnl of all zeros
         gated = np.zeros(self.size)
 
         for pulse in pulses:
@@ -192,15 +190,15 @@ class LineEnchancer:
 
         return gated
 
-    def mse(self, signal, swdw):
-        length = len(signal)
+    def mse(self, sgnl, swdw):
+        length = len(sgnl)
         MSE = np.zeros(length)
         doffset = floor(swdw/2)
 
         for lead in range(swdw, length):
             trail = lead - swdw + 1
             # take the mean of the squares
-            thismse = np.mean(list(map(lambda x: x**2, signal[trail:lead])))
+            thismse = np.mean(list(map(lambda x: x**2, sgnl[trail:lead])))
 
             drop = trail + doffset
             MSE[drop] = thismse
