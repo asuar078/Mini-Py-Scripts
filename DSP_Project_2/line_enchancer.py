@@ -5,9 +5,7 @@ Line enchancer class
 from math import floor
 import matplotlib.pyplot as plt
 import numpy as np
-# import random
 from numpy import pi, sin
-# from numpy.linalg import inv
 from scipy import signal
 
 np.set_printoptions(precision=3)
@@ -35,7 +33,6 @@ class LineEnchancer:
         graph.set_title(title, fontsize=35)
         graph.set_xlabel(x_axis, fontsize=25)
         graph.set_ylabel(y_axis, fontsize=25)
-        # plt.show()
 
     def plt_graph_overlay(self, sgnl1, sgnl2, title='Title',
                           x_axis='x-axis', y_axis='y-axis'):
@@ -55,7 +52,42 @@ class LineEnchancer:
         graph.set_title(title, fontsize=35)
         graph.set_xlabel(x_axis, fontsize=25)
         graph.set_ylabel(y_axis, fontsize=25)
-        # plt.show()
+
+    def plt_3_graph(self, sgnl1, sgnl2, sgnl3, title1='Title',
+                    x1_axis='x-axis', y1_axis='y-axis',
+                    title2='Title', x2_axis='x-axis', y2_axis='y-axis',
+                    title3='Title', x3_axis='x-axis', y3_axis='y-axis',
+                    fTitle='Title', xlabel='xlabel', ylabel='ylabel',
+                    delay=0, L=0, mu=0, leg=True):
+        '''
+        Plot a sgnl
+        '''
+        plt.style.use('ggplot')
+
+        rang = self.generate_range(len(sgnl1))
+
+        fig = plt.figure(figsize=(22, 10))
+        graph1 = fig.add_subplot(3, 1, 1)
+        graph2 = fig.add_subplot(3, 1, 2)
+        graph3 = fig.add_subplot(3, 1, 3)
+
+        graph1.plot(rang, sgnl1, color='c')
+        graph2.plot(rang, sgnl2, color='b')
+        graph3.plot(rang, sgnl3, color='r')
+
+        plt.suptitle(fTitle, size=34)
+        plt.xlabel('k', size=20)
+        graph1.set_ylabel(title1, fontsize=20)
+        graph2.set_ylabel(title2, fontsize=20)
+        graph3.set_ylabel(title3, fontsize=20)
+
+        if leg:
+            par = 'Delay = {0}\nL = {1}\nu = {2}'.format(delay, L, mu)
+
+            graph2.text(1, 1, par,
+                        horizontalalignment='right',
+                        verticalalignment='top',
+                        transform=graph2.transAxes, fontsize=18)
 
     def generate_range(self, size):
         '''
@@ -92,10 +124,10 @@ class LineEnchancer:
         '''
         mtrx = np.matrix([sgnl])
         pwr = (mtrx * (mtrx.transpose() / mtrx.size))
-        print('Power = ' + str(float(pwr)))
+        # print('Power = ' + str(float(pwr)))
 
         upper = 1 / ((L+1)*float(pwr))
-        print('Upper bound u = ' + str(upper))
+        # print('Upper bound u = ' + str(upper))
 
         return pwr, upper
 
@@ -149,22 +181,19 @@ class LineEnchancer:
     def generate_fft(self, sgnl):
         N = len(sgnl)
 
+        # need to convert to list for fft func
         new_lst = np.zeros(len(sgnl))
         for values in range(0, N):
             new_lst[values] = sgnl[values]
-        # print(new_lst)
 
-        # sgnl_fft = np.fft.fft(sgnl)
         sgnl_fft = np.fft.fft(new_lst)
 
-        # return 2.0/N * np.abs(sgnl_fft[0:N/2])
-        mtrx_fft = 2.0/N * np.abs(sgnl_fft[0:N/2])
-
-        return mtrx_fft
+        return 2.0/N * np.abs(sgnl_fft[0:N/2])
 
     def generate_psd(self, sgnl):
         N = len(sgnl)
 
+        # need to convert to list for welch func
         new_lst = np.zeros(len(sgnl))
         for values in range(0, N):
             new_lst[values] = sgnl[values]
