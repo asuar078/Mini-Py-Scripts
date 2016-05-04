@@ -37,14 +37,6 @@ if __name__ == '__main__':
     x2_sine = x2.generate_sine_wave()
     x3_sine = x3.generate_sine_wave()
 
-    if A1:
-        x1.plt_graph(x1_sine[:200], title='x1(k) f1 = fs/16',
-                     y_axis='Amplitude', x_axis='k')
-        x2.plt_graph(x2_sine[:200], title='x2(k) f2 = fs * (6/32)',
-                     y_axis='Amplitude', x_axis='k')
-        x3.plt_graph(x3_sine[:200], title='x3(k) f3 = fs/4',
-                     y_axis='Amplitude', x_axis='k')
-
     # A.2
     x1_noise = x1.generate_noise(low=-0.3, high=0.3)
     A = x1_sine + x1_noise
@@ -55,6 +47,17 @@ if __name__ == '__main__':
     x3_noise = x3.generate_noise(low=-0.3, high=0.3)
     C = x3_sine + x3_noise
 
+    if A1:
+        x1.plt_graph(x1_sine[:200], title='x1(k) f1 = fs/16',
+                     y_axis='Amplitude', x_axis='k')
+        x2.plt_graph(x2_sine[:200], title='x2(k) f2 = fs * (6/32)',
+                     y_axis='Amplitude', x_axis='k')
+        x3.plt_graph(x3_sine[:200], title='x3(k) f3 = fs/4',
+                     y_axis='Amplitude', x_axis='k')
+
+        x1.plt_graph(x1_noise[:200], title='r(k)',
+                     y_axis='Amplitude', x_axis='k')
+
     if A2:
         x1.plt_graph(A[1792:], title='r(k) + x1(k)', x_axis='Amplitude',
                      y_axis='k')
@@ -64,9 +67,9 @@ if __name__ == '__main__':
                      y_axis='k')
 
     # number of taps
-    A_L = 50
+    A_L = 60
     B_L = 50
-    C_L = 50
+    C_L = 70
 
     Apwr, Amu = x1.upper_bound_u(A, A_L)
     print('A for L={0}, max mu={1:0.4f}'.format(A_L, Amu))
@@ -89,7 +92,7 @@ if __name__ == '__main__':
 
     # mu value
     A_mu = 0.001
-    B_mu = 0.001
+    B_mu = 0.002
     C_mu = 0.001
 
     # run lms
@@ -100,30 +103,30 @@ if __name__ == '__main__':
     # A.3
     if A3:
         # x1
-        x1.plt_3_graph(A, A_yk, A_ek, title1='Primary Input',
+        x1.plt_3_graph(A[1792:], A_yk[1792:], A_ek[1792:], title1='Primary Input',
                        title3='Error', title2='Filter Output',
                        fTitle='r(k) + x1(k)', delay=delay_A, L=A_L,
                        mu=A_mu)
 
-        x1.plt_graph_overlay(x1_sine, A_yk, title='X1 and Filter Output',
+        x1.plt_graph_overlay(x1_sine[1792:], A_yk[1792:], title='X1 and Filter Output',
                              x_axis='K', y_axis='Amplitude')
 
-        # x2
-        x2.plt_3_graph(B, B_yk, B_ek, title1='Primary Input',
+        # # x2
+        x2.plt_3_graph(B[1792:], B_yk[1792:], B_ek[1792:], title1='Primary Input',
                        title3='Error', title2='Filter Output',
                        fTitle='r(k) + x2(k)', delay=delay_B, L=B_L,
                        mu=B_mu)
 
-        x2.plt_graph_overlay(x2_sine, B_yk, title='X2 and Filter Output',
+        x2.plt_graph_overlay(x2_sine[1792:], B_yk[1792:], title='X2 and Filter Output',
                              x_axis='K', y_axis='Amplitude')
 
-        # x3
-        x3.plt_3_graph(C, C_yk, C_ek, title1='Primary Input',
+        # # x3
+        x3.plt_3_graph(C[1792:], C_yk[1792:], C_ek[1792:], title1='Primary Input',
                        title3='Error', title2='Filter Output',
                        fTitle='r(k) + x3(k)', delay=delay_C, L=C_L,
                        mu=C_mu)
 
-        x3.plt_graph_overlay(x3_sine, C_yk, title='X3 and Filter Output',
+        x3.plt_graph_overlay(x3_sine[1792:], C_yk[1792:], title='X3 and Filter Output',
                              x_axis='K', y_axis='Amplitude')
 
     # generate fft for signanl, output and error
@@ -179,10 +182,6 @@ if __name__ == '__main__':
     C_ek_psd = x3.generate_psd(C_yk)
 
     if A3_psd:
-        # x1.plt_graph(Paa_den, title='A PSD')
-        # x1.plt_graph(Pab_den, title='A_ek PSD')
-        # x1.plt_graph(Pac_den, title='A_yk PSD')
-
         x1.plt_3_graph(A_psd, A_yk_psd, A_ek_psd,
                        title1='Primary Input psd',
                        title3='Error psd', title2='Filter Output psd',
@@ -201,9 +200,9 @@ if __name__ == '__main__':
     ################################################
     # PART B)
     ################################################
-    L = 40
-    mu = 0.005
-    P0 = 0.1
+    L = 60
+    mu = 0.008
+    P0 = 0.08
 
     gated = x1.gated_sine(P0)
     x1.plt_graph(gated, title='gated')
@@ -227,6 +226,6 @@ if __name__ == '__main__':
         x2.plt_graph_overlay(gated, MSE,
                              title='Detection of Weak Carrier Pulse',
                              y_axis='Amplitude',
-                             x_axis='k')
+                             x_axis='k', P0=P0, L=L, mu=mu)
 
     plt.show()

@@ -35,7 +35,8 @@ class LineEnchancer:
         graph.set_ylabel(y_axis, fontsize=25)
 
     def plt_graph_overlay(self, sgnl1, sgnl2, title='Title',
-                          x_axis='x-axis', y_axis='y-axis'):
+                          x_axis='x-axis', y_axis='y-axis',
+                          P0=0, L=0, mu=0, leg=True):
         '''
         Plot a sgnl
         '''
@@ -52,6 +53,14 @@ class LineEnchancer:
         graph.set_title(title, fontsize=35)
         graph.set_xlabel(x_axis, fontsize=25)
         graph.set_ylabel(y_axis, fontsize=25)
+
+        if leg:
+            par = 'P0 = {0}\nL = {1}\nu = {2}'.format(P0, L, mu)
+
+            graph.text(1, 1, par,
+                        horizontalalignment='right',
+                        verticalalignment='top',
+                        transform=graph.transAxes, fontsize=28)
 
     def plt_3_graph(self, sgnl1, sgnl2, sgnl3, title1='Title',
                     x1_axis='x-axis', y1_axis='y-axis',
